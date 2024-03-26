@@ -1,4 +1,10 @@
-examples = [
+def get_examples():
+    examples = [
+    
+    {
+        "input":'',
+        'query':'',
+    },
     {   "input": "List all artists.",
         "query": "SELECT * FROM Artist;"
     },
@@ -46,5 +52,23 @@ examples = [
     {
         "input": "List all employees ",
         "query": 'SELECT * FROM "Employee"',
+    },
+    
+    {
+        "input": "List all from Reactivities.",
+        'query':'SELECT COUNT(*) FROM [Reactivities].[dbo].[Activities]',
+    },
+    {
+        "input":'Daj mi prvih 10  vrijednosti iz Bidova',
+        "query":""" select top 10 RegulationUnitEic
+            FROM [AdnetBalancingMarket_Local].[Bid].[EnergyBids]
+            where ProductTypeId in (4,5) and StatusId in (2,6) 
+            GROUP BY RegulationUnitEic,TimeFrom,ProductTypeId
+            order by TimeFrom""",
     }
-]
+    
+    
+    ]
+    return examples    
+
+

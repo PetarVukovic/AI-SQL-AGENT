@@ -1,0 +1,5 @@
+streamlit
+sqlalchemy
+Pillow
+python-dotenv  # For os.getenv to work, assuming you're using environment variables for configuration
+pyodbc  # Since you're using SQL Server with SQLAlchemy, pyodbc is needed for connection

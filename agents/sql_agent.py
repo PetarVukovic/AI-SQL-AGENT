@@ -1,9 +1,8 @@
-
 from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_community.vectorstores import FAISS
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector
-from langchain_openai import OpenAIEmbeddings
+from utilities.embeddings.hf_embeddings import SentenceTransformerEmbeddings
 from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotPromptTemplate,
@@ -12,14 +11,50 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 
+'''Docs
+ChatOpenAI
+Svrha: Služi za inicijalizaciju komunikacije sa OpenAI API-jem, konkretno sa modelom gpt-3.5-turbo. Omogućava slanje upita modelu i dobijanje odgovora.
+Parametri:
+model_name: Ime modela koji se koristi (u ovom slučaju gpt-3.5-turbo).
+temperature: Kontroliše raznovrsnost odgovora. Nula znači da će model davati najverovatnije odgovore.
+openai_api_key: Ključ za pristup OpenAI API-ju.
+
+create_sql_agent
+Svrha: Funkcija za kreiranje SQL agenta koji koristi jezički model za generisanje SQL upita na osnovu korisničkog unosa.
+Parametri:
+llm: Instanca jezičkog modela.
+db: Baza podataka sa kojom agent interaguje.
+verbose: Ako je postavljeno na True, štampa dodatne informacije tokom izvršavanja.
+
+SemanticSimilarityExampleSelector
+Svrha: Bira primere na osnovu semantičke sličnosti sa ulaznim upitom. Koristi se za selektovanje relevantnih primera koji pomažu modelu da generiše preciznije odgovore.
+Metode:
+from_examples: Inicijalizuje selektor sa setom primera, koristeći embeddinge za pronalaženje semantički sličnih primera.
+
+OpenAIEmbeddings
+Svrha: Generiše embeddinge (vektorske reprezentacije) koristeći OpenAI model. Ovi embeddingi se zatim koriste za pronalaženje semantički sličnih primera.
+
+FAISS
+Svrha: Biblioteka za efikasnu pretragu sličnosti i klasterizaciju gustih vektora. Koristi se u kombinaciji sa OpenAIEmbeddings za brzo pronalaženje sličnih primera.
+
+ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate
+Ove klase se koriste za kreiranje promptova koji vode model kroz proces generisanja odgovora. Omogućavaju definisanje strukture prompta, dodavanje sistemskih poruka, i korišćenje few-shot learninga kroz primere input-output parova.
+Kako Funkcioniše SQLAgent
+Inicijalizacija ChatOpenAI: Postavlja osnovu za interakciju sa OpenAI jezičkim modelom.
+Kreiranje SemanticSimilarityExampleSelector: Selektor koristi primere za identifikovanje onih koji su semantički najbliži upitu korisnika. Ovo poboljšava preciznost i relevantnost generisanih SQL upita.
+Konstruisanje Promptova:
+FewShotPromptTemplate: Uključuje nekoliko primera upita i odgovarajućih SQL upita kako bi pomogao modelu da razume kontekst zadataka.
+ChatPromptTemplate: Kombinuje različite tipove promptova u jedan koherentan prompt, uključujući sistematske poruke i prostor za korisnički unos.
+Kreiranje SQL Agenta: Konačno, funkcija create_sql_agent se koristi za kreiranje agenta koji koristi definisane promptove za generisanje SQL upita na osnovu korisničkog unosa. Ovaj agent je spreman za interakciju s korisnicima i pružanje odgovora na upite kroz generisane SQL upite.
+Svaki od ovih koraka doprinosi stvaranju efikasnog sistema za interakciju s bazama podataka koristeći prirodni jezik, omogućavajući aplikacijama da procesuiraju korisničke upite i generišu odgovarajuće SQL upite na intuitivan način.
+'''
+
+
 class SQLAgent:
-    def __init__(self, api_key, db):
-        self.llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=api_key)
+    def __init__(self,db):
         self.db = db
 
     def create_agent(self,examples):
-        agent=create_sql_agent(llm=self.llm,db=self.db,verbose=True)
-        
    
         # SemanticSimilarityExampleSelector: Selects training examples based on semantic similarity to the input query.
         # from_examples: A method to initialize the selector with a set of examples.
@@ -27,11 +62,14 @@ class SQLAgent:
         # FAISS: A library for efficient similarity search and clustering of dense vectors.
         # k: The number of similar examples to retrieve.
         # input_keys: Specifies which part of the examples to consider for generating embeddings.
+        self.llm=ChatOpenAI()
+        embeddings = SentenceTransformerEmbeddings()
+        
 
         example_selector = SemanticSimilarityExampleSelector.from_examples(
             examples,
-            OpenAIEmbeddings(),
-            FAISS,
+            embeddings,
+            vectorstore_cls= FAISS,
             k=5,
             input_keys=["input"],
         )
@@ -80,7 +118,7 @@ class SQLAgent:
             llm=self.llm,
             db=self.db,
             prompt=full_prompt,
-            verbose=True,
+            verbose=False,
             agent_type="openai-tools",
         )
 
