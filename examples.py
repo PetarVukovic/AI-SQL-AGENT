@@ -1,7 +1,5 @@
 examples = [
-    {   "input": "List all artists.",
-        "query": "SELECT * FROM Artist;"
-    },
+    {"input": "List all artists.", "query": "SELECT * FROM Artist;"},
     {
         "input": "Find all albums for the artist 'AC/DC'.",
         "query": "SELECT * FROM Album WHERE ArtistId = (SELECT ArtistId FROM Artist WHERE Name = 'AC/DC');",
@@ -38,13 +36,4 @@ examples = [
         "input": "Which albums are from the year 2000?",
         "query": "SELECT * FROM Album WHERE strftime('%Y', ReleaseDate) = '2000';",
     },
-    {
-        "input": "How many employees are there",
-        "query": 'SELECT COUNT(*) FROM "Employee"',
-    },
-    
-    {
-        "input": "List all employees ",
-        "query": 'SELECT * FROM "Employee"',
-    }
 ]

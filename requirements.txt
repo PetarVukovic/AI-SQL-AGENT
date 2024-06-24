@@ -1,0 +1,7 @@
+streamlit
+langchain-openai
+langchain-community
+langchain-core
+pydantic
+faiss-cpu
+sqlite
